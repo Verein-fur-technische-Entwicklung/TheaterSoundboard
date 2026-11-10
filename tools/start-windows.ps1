@@ -30,10 +30,12 @@ function Show-Soundboard($process) {
 try {
     $running = Find-SoundboardWindow
     if ($running) { Show-Soundboard $running; exit 0 }
+    $onedir = Get-ChildItem -LiteralPath (Join-Path $projectRoot 'releases') -Directory -Filter 'Theater-Soundboard_*_windows-x64-onedir' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName 'Theater Soundboard.exe') } | Select-Object -First 1
     $portable = Get-ChildItem -LiteralPath (Join-Path $projectRoot 'releases') -Filter 'Theater Soundboard *.exe' -File -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
     $unpacked = Join-Path $projectRoot 'releases\win-unpacked\Theater Soundboard.exe'
     $electron = Join-Path $projectRoot 'node_modules\electron\dist\electron.exe'
-    if ($portable) { Start-Process -FilePath $portable.FullName -ArgumentList '--disable-gpu' -WorkingDirectory $projectRoot }
+    if ($onedir) { Start-Process -FilePath (Join-Path $onedir.FullName 'Theater Soundboard.exe') -ArgumentList '--disable-gpu' -WorkingDirectory $projectRoot }
+    elseif ($portable) { Start-Process -FilePath $portable.FullName -ArgumentList '--disable-gpu' -WorkingDirectory $projectRoot }
     elseif (Test-Path -LiteralPath $unpacked) { Start-Process -FilePath $unpacked -ArgumentList '--disable-gpu' -WorkingDirectory $projectRoot }
     elseif (Test-Path -LiteralPath $electron) { Start-Process -FilePath $electron -ArgumentList ('"' + $projectRoot + '"'), '--disable-gpu' -WorkingDirectory $projectRoot }
     else { throw 'Keine Windows-App gefunden. Die EXE aus GitHub Releases in releases ablegen.' }

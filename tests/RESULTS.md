@@ -13,3 +13,5 @@ Die vorherige Version 0.2.0 wurde unter Ubuntu 24.04.5 installiert und mit diese
 Audio-Grenze der TCG-VM: Der App-Master erzeugte unter 0.2.0 ein nicht stummes Musiksignal (Peak 0.137). Die virtuelle QEMU-Aufnahme blieb dennoch stumm; ein End-to-End-Audionachweis gelang dort nicht. Das ist kein Hoertest am realen Zielrechner. Vor Theaterbetrieb echte Dateien, Ausgang, Interface, Blenden und laengeren Betrieb an der tatsaechlichen Anlage pruefen.
 
 Die fertige portable Windows-EXE 0.3.0 hat zusaetzlich den MP3-Test mit bytegleichem Export, vollstaendigem App-Neustart und anschliessendem Abspielen ohne Dateizuordnung sowie die komplette Schleifentestsuite bestanden. Die App-Pakete enthalten die geprueften Quelldateien bytegleich.
+
+Onedir-Nachtrag: Die Windows-App wurde direkt aus ihrem entpackten Laufzeitordner mit allen drei MP3s und vollstaendigem Prozessneustart erfolgreich getestet. Ein Onedir-ZIP mit allen Laufzeitdateien und SHA-256 wird zusaetzlich angeboten. Firmenrichtlinien wurden nicht veraendert oder umgangen.

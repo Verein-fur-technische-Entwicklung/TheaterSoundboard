@@ -14,7 +14,8 @@
     "dist:ubuntu": "electron-builder --linux --x64 --dir --publish never && python tools/build_ubuntu.py",
     "test:drag": "electron tests/drag-smoke.cjs",
     "test:files": "electron tests/files-smoke.cjs",
-    "test:loop": "electron tests/loop-smoke.cjs"
+    "test:loop": "electron tests/loop-smoke.cjs",
+    "dist:win:onedir": "electron-builder --win --x64 --dir --publish never && python tools/build_onedir.py"
   },
   "devDependencies": {
     "electron": "^42.0.0",

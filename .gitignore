@@ -31,3 +31,5 @@ __pycache__/
 !.env.example
 Thumbs.db
 .DS_Store
+
+/.onedir-build*/

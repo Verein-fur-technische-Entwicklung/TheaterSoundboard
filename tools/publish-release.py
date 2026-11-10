@@ -22,6 +22,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--publish', action='store_true')
     parser.add_argument('--check', action='store_true')
+    parser.add_argument('--add-onedir', action='store_true', help='Add an Onedir ZIP to the existing release')
     args = parser.parse_args()
     remote = git('remote', 'get-url', 'origin')
     match = re.fullmatch(r'https://github\.com/([^/]+/[^/]+?)(?:\.git)?', remote)
@@ -46,10 +47,12 @@ def main():
             return json.load(response)
     info = api('GET', base)
     print('Repository:', repo, '| push permission:', info.get('permissions', {}).get('push'))
-    if not args.publish:
+    if not (args.publish or args.add_onedir):
         return
     version = json.loads((ROOT / 'package.json').read_text('utf-8'))['version']
     names = [f'Theater Soundboard {version}.exe', f'Theater-Soundboard_{version}_ubuntu-amd64.deb']
+    if args.add_onedir:
+        names = [f'Theater-Soundboard_{version}_windows-x64-onedir.zip']
     assets = []
     for name in names:
         file = ROOT / 'releases' / name
@@ -59,16 +62,18 @@ def main():
             raise SystemExit('Checksum mismatch: ' + name)
         assets.extend([file, checksum])
     commit = git('rev-parse', 'HEAD')
-    if git('rev-parse', 'origin/main') != commit:
+    if not args.add_onedir and git('rev-parse', 'origin/main') != commit:
         raise SystemExit('Push the exact source commit to origin/main first.')
     tag = 'v' + version
     try:
         release = api('GET', base + '/releases/tags/' + tag)
-        if release.get('target_commitish') != commit or not release.get('draft'):
+        if not args.add_onedir and (release.get('target_commitish') != commit or not release.get('draft')):
             raise SystemExit('Release already exists; refusing to overwrite a published or different release.')
     except urllib.error.HTTPError as error:
         if error.code != 404:
             raise
+        if args.add_onedir:
+            raise SystemExit('Publish the base release first.')
         release = api('POST', base + '/releases', {
             'tag_name': tag, 'target_commitish': commit, 'name': 'Theater Soundboard ' + version,
             'draft': True, 'body': 'Endlosschleife pro Kachel: direkt oder mit Aus-/Einblenden. Schleifen, Blenden und Bedienung bleiben im Projekt gespeichert. Verbesserter Windows-Start mit Softwaregrafik und Wiederverwendung eines offenen Fensters.\n\nWindows: EXE direkt starten. Ubuntu Desktop 24.04+ amd64: DEB installieren. SHA-256-Pruefsummen sind beigefuegt.\n\nSchleifen- und Desktoptests unter Windows bestanden; Debian-Paketstruktur und Linux-Laufzeit geprueft. Hoertest mit der eigenen Saalanlage bleibt erforderlich.'})
@@ -84,7 +89,10 @@ def main():
         url = release['upload_url'].split('{')[0] + '?name=' + urllib.parse.quote(upload_name)
         result = api('POST', url, payload, binary=True)
         print('Uploaded:', result['name'], result['size'])
-    result = api('PATCH', base + '/releases/' + str(release['id']), {'draft': False})
+    update = {'draft': False}
+    if args.add_onedir and 'Onedir-ZIP' not in release.get('body', ''):
+        update['body'] = release.get('body', '') + '\n\nWindows Onedir-ZIP: vollstaendig entpacken und darin Theater Soundboard.exe starten. Keine Selbstentpackung beim Start. Alle DLLs und Unterordner zusammenlassen; Firmenrichtlinien gelten weiterhin.'
+    result = api('PATCH', base + '/releases/' + str(release['id']), update)
     print('Published:', result['html_url'])
 
 if __name__ == '__main__':

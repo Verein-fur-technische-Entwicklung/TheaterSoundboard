@@ -4,7 +4,8 @@ Lokale Audio-App fuer Windows und Ubuntu. Keine Cloud, keine Anmeldung. Aktuelle
 
 ## Starten
 
-- **Windows:** EXE aus [GitHub Releases](https://github.com/Verein-fur-technische-Entwicklung/TheaterSoundboard/releases/latest) herunterladen und doppelklicken. Im vollstaendigen lokalen Projektordner startet `Start-Soundboard.cmd` die neueste EXE unter `releases` oder aktiviert das bereits offene Fenster. Node.js ist fuer die fertige App nicht erforderlich.
+- **Windows (Onedir, empfohlen):** ZIP `Theater-Soundboard_0.3.0_windows-x64-onedir.zip` aus [GitHub Releases](https://github.com/Verein-fur-technische-Entwicklung/TheaterSoundboard/releases/latest) herunterladen, vollstaendig entpacken und darin `Theater Soundboard.exe` starten. Alle DLLs sowie locales/resources zusammenlassen. Keine Selbstentpackung beim Start. Auch diese App muss von der Firmen-IT erlaubt sein. Der lokale CMD-Starter bevorzugt die entpackte Onedir-Fassung.
+- **Windows (Onefile):** EXE aus [GitHub Releases](https://github.com/Verein-fur-technische-Entwicklung/TheaterSoundboard/releases/latest) herunterladen und doppelklicken. Im vollstaendigen lokalen Projektordner startet `Start-Soundboard.cmd` die neueste EXE unter `releases` oder aktiviert das bereits offene Fenster. Node.js ist fuer die fertige App nicht erforderlich.
 - **Ubuntu Desktop 24.04+ auf Intel/AMD 64-bit:** DEB aus demselben Release installieren und Theater Soundboard im App-Menue starten. Im Terminal: `sudo apt install ./Theater-Soundboard_0.3.0_ubuntu-amd64.deb`.
 - **Browser-Vorschau:** `index.html` oeffnen. Nach Neustart muss der Browser die Dateien erneut erhalten; zum gemeinsamen Laden ZIP-Export entpacken und Projektordner oeffnen verwenden. Die Desktop-App merkt sich Dateipfade.
 
@@ -60,6 +61,7 @@ npm run test:desktop
 npm run test:drag
 npm run test:files
 npm run dist:win
+npm run dist:win:onedir
 npm run dist:ubuntu
 ```
 
