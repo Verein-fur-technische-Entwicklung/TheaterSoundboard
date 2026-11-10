@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+case "$1" in
+  remove|deconfigure)
+    if command -v aa-enabled >/dev/null 2>&1 && aa-enabled --quiet && [ -f /etc/apparmor.d/theater-soundboard ]; then
+      apparmor_parser --remove /etc/apparmor.d/theater-soundboard || true
+    fi
+    ;;
+esac
+exit 0

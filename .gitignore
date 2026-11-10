@@ -1,0 +1,8 @@
+node_modules/
+release/
+*.log
+.npm-cache/
+.electron-cache/
+.builder-cache/
+.smoke-data/
+preview.png

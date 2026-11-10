@@ -1,0 +1,9 @@
+abi <abi/4.0>,
+include <tunables/global>
+
+# Nur diese Anwendung darf die für Chromium nötigen User-Namespaces verwenden.
+# Entspricht dem AppArmor-Profilmuster von electron-builder für Ubuntu 24+.
+profile theater-soundboard /opt/theater-soundboard/theater-soundboard flags=(unconfined) {
+  userns,
+  include if exists <local/theater-soundboard>
+}

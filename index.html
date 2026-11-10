@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; media-src 'self' blob:; img-src 'self' data:; connect-src 'self'">
+  <title>Theater · Soundboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-icon">▥</span><div>THEATER<span class="brand-sub">SOUNDBOARD</span></div><span class="version">ENTWURF 01</span></div>
+    <div class="project-actions"><button id="openProject">Projekt öffnen</button><button id="saveProject">Speichern</button><button id="exportProject">Mit Audio exportieren ↗</button></div>
+  </header>
+  <main>
+    <section class="workspace">
+      <div class="heading"><div><div class="eyebrow">DEIN AUFTRITT. DEIN TIMING.</div><input id="projectTitle" class="project-title" aria-label="Name der Aufführung" value="Meine Aufführung"><p id="projectSummary">Alle Einsätze im Blick.</p></div><button id="modeButton" class="mode-button">◉ Bearbeiten</button></div>
+      <div class="toolbar"><div class="tabs"><span class="tab active">Alle Einsätze <b id="cueCount">0</b></span></div><div class="toolbar-right"><span id="saveState" class="muted">Lokal gespeichert</span><button id="addFiles" class="primary">＋ Audiodateien</button><button id="addCue" title="Leere Kachel erstellen">＋ Kachel</button></div></div>
+      <div id="cueGrid" class="cue-grid" aria-label="Audio-Einsätze"></div>
+      <div class="board-hint"><span>↔ Kacheln im Bearbeitungsmodus am Griff verschieben</span><span><kbd>←</kbd> <kbd>→</kbd> Vorwählen · <kbd>Leertaste</kbd> Start / Stopp · <kbd>Esc</kbd> Alles stoppen</span></div>
+      <section class="playback"><div class="playback-top"><div><span class="eyebrow">VORGEWÄHLTER EINSATZ</span><h2 id="selectedTitle">Keine Kachel ausgewählt</h2></div><span id="selectedMode" class="badge">BEREIT</span></div><div class="playback-controls"><button id="playSelected" class="play-main" aria-label="Ausgewählten Einsatz starten oder stoppen">▶</button><button id="resetSelected" title="Auf Anfang zurücksetzen">↶</button><div class="timeline"><div class="timeline-times"><span id="elapsed">00:00</span><span id="remaining">−00:00</span></div><div class="track"><div id="mainProgress"></div></div></div><button id="stopAll" class="danger">■ Alles stoppen <kbd>Esc</kbd></button></div></section>
+    </section>
+    <aside>
+      <div class="aside-title"><span class="eyebrow">KACHEL-EINSTELLUNGEN</span><span id="cueNumber">01</span></div>
+      <div id="editor">
+        <label>Titel<input id="cueTitle" maxlength="120"></label>
+        <label>Audiodatei</label><button id="assignFile" class="file-picker">♫ <span id="fileName">Datei auswählen …</span><span>↗</span></button>
+        <label>Regie / Notizen<textarea id="cueNotes" rows="4" placeholder="Stichwort, Szene oder Einsatz …"></textarea></label>
+        <label>Verhalten bei erneutem Auslösen<select id="cueBehavior"><option value="stop">Stoppen · nächster Start von vorne</option><option value="pause">Pausieren · danach fortsetzen</option></select></label>
+        <div class="label-row"><label for="cueGain">Gain</label><output id="gainValue">0 dB</output></div><input id="cueGain" type="range" min="-36" max="12" step="0.5" value="0"><div class="range-labels"><span>−36 dB</span><button id="resetGain">0 dB zurücksetzen</button><span>+12 dB</span></div>
+        <label>Kachelfarbe</label><div id="colorChoices" class="color-choices"></div>
+        <button id="deleteCue" class="delete-button">Kachel entfernen</button>
+      </div>
+      <div class="global-settings"><span class="eyebrow">BEDIENUNG</span><label>Klick auf eine Kachel<select id="clickMode"><option value="select">Nur vorwählen</option><option value="direct">Vorwählen und auslösen</option></select></label><label class="check"><input id="allowOverlap" type="checkbox" checked> Mehrere Einsätze gleichzeitig</label><div class="label-row"><label for="masterGain">Master</label><output id="masterValue">80 %</output></div><input id="masterGain" type="range" min="0" max="100" value="80"><p class="small muted">Positive Gain-Werte können übersteuern. Vor der Aufführung am tatsächlichen Audioausgang prüfen.</p></div>
+      <div class="live-status"><span class="status-dot"></span><span id="runningCount">Kein Einsatz läuft</span><span>LOKAL / OFFLINE</span></div>
+    </aside>
+  </main>
+  <footer><span><span class="status-dot"></span> THEATER SOUNDBOARD</span><span id="footerHint">Bereit für deinen nächsten Einsatz.</span><button id="loadDemo">Demo-Anordnung laden</button></footer>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <input id="browserFiles" type="file" accept="audio/*,.mp3,.wav,.ogg,.flac,.m4a" multiple hidden>
+  <input id="browserProject" type="file" accept=".json" hidden>
+  <script src="app.js"></script>
+</body>
+</html>
