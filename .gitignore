@@ -1,8 +1,33 @@
-node_modules/
-release/
+# Installed dependencies and local build caches
+/node_modules/
+/.npm-cache/
+/.electron-cache/
+/.builder-cache/
+
+# Distributables belong in GitHub Releases, not the source tree
+/releases/
+/release/
+
+# User music and local projects stay on this computer
+/files/*
+!/files/README.md
+*.theater.json
+
+# Test runs and generated reports/screenshots
+/.*-test-data/
+/.smoke-data/
+/logs/
+/test-results/
+/preview*.png
 *.log
-.npm-cache/
-.electron-cache/
-.builder-cache/
-.smoke-data/
-preview.png
+__pycache__/
+*.py[cod]
+
+# Editor/OS files and private environment settings
+/.vscode/
+/.idea/
+.env
+.env.*
+!.env.example
+Thumbs.db
+.DS_Store

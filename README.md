@@ -1,93 +1,70 @@
 # Theater Soundboard
 
-Ein lokaler, bedienbarer Entwurf für Windows und Linux. Keine Cloud, keine externen Schriftarten, keine Anmeldung.
+Lokale Audio-App fuer Windows und Ubuntu. Keine Cloud, keine Anmeldung. Aktuelle Version: **0.3.0**.
 
-## Ubuntu: fertige App installieren
+## Starten
 
-Für **Ubuntu Desktop 24.04 oder neuer auf Intel/AMD 64-bit (amd64)** gibt es ein fertiges Installationspaket unter `release/Theater-Soundboard_0.1.0_ubuntu-amd64.deb`.
+- **Windows:** EXE aus [GitHub Releases](https://github.com/Verein-fur-technische-Entwicklung/TheaterSoundboard/releases/latest) herunterladen und doppelklicken. Im vollstaendigen lokalen Projektordner startet `Start-Soundboard.cmd` die neueste EXE unter `releases` oder aktiviert das bereits offene Fenster. Node.js ist fuer die fertige App nicht erforderlich.
+- **Ubuntu Desktop 24.04+ auf Intel/AMD 64-bit:** DEB aus demselben Release installieren und Theater Soundboard im App-Menue starten. Im Terminal: `sudo apt install ./Theater-Soundboard_0.3.0_ubuntu-amd64.deb`.
+- **Browser-Vorschau:** `index.html` oeffnen. Nach Neustart muss der Browser die Dateien erneut erhalten; zum gemeinsamen Laden ZIP-Export entpacken und Projektordner oeffnen verwenden. Die Desktop-App merkt sich Dateipfade.
 
-1. Nur diese `.deb`-Datei auf den Ubuntu-Rechner kopieren. Node.js, npm und der Quellcode werden dort nicht benötigt.
-2. Die Datei mit der grafischen Paketinstallation öffnen und **Installieren** wählen. Dafür wird das Administratorkennwort benötigt. Eventuell fehlende Ubuntu-Systembibliotheken lädt die Paketverwaltung nach; dafür kann Internet nötig sein.
-3. Im App-Menü **Theater Soundboard** starten. Anschließend arbeitet die App offline.
-
-Falls die Desktopumgebung keine grafische Installation lokaler `.deb`-Dateien anbietet, einmalig im Downloadordner:
-
-```sh
-sudo apt install ./Theater-Soundboard_0.1.0_ubuntu-amd64.deb
-```
-
-Das Paket enthält Electron, das Programmsymbol, einen App-Menü-Eintrag und ein eigenes AppArmor-Profil für Chromiums Sandbox. Es verändert keine globalen Sandbox-Einstellungen und startet nicht mit `--no-sandbox`. Es ist kein Paket für ARM-Rechner oder Ubuntu 22.04.
-
-Der Debian-Archivaufbau, die enthaltene Linux-amd64-Laufzeit, Dateiprüfsummen, Besitzer, Berechtigungen und Startdateien werden beim Bau überprüft. Am 10.11.2026 wurden Installation, Start mit aktivem AppArmor-Profil sowie die Integrationstests mit einer synthetischen MP3-Datei unter Ubuntu 24.04.5 Desktop in einer VM geprüft. Die Audioausgabe wurde als Stereo-PCM mit 48 kHz aufgezeichnet und auf ein vorhandenes Signal geprüft. Die Protokolle liegen im benachbarten Projekt `LinuxTestLab/logs`. Ein Hör- und Belastungstest mit den eigenen Aufführungsdateien und dem tatsächlichen Audiointerface steht weiterhin aus.
-
-Deinstallation über die Paketverwaltung oder `sudo apt remove theater-soundboard`. Eigene Projektdateien und Benutzereinstellungen bleiben erhalten.
-
-## Vorschau ohne Installation
-
-`index.html` im aktuellen Firefox, Chrome oder Edge öffnen. Die sechs Demo-Kacheln enthalten keine Audiodateien. Eigene MP3-Dateien mit **Audiodateien** hinzufügen oder über **Datei auswählen** einer Kachel zuordnen.
-
-Die Browser-Vorschau kann abspielen und die Anordnung lokal speichern. Nach einem Neuladen müssen Dateien erneut zugeordnet werden, weil der Browser keinen dauerhaften Dateizugriff erhält. Projektdateien können heruntergeladen und wieder geöffnet werden. Der Export mit Audio ist nur in der Desktopversion verfügbar.
-
-## Desktopprogramm starten
-
-Benötigt Node.js mit npm:
-
-```powershell
-cd D:\pythonprojects\TheaterSoundboard
-npm install
-npm run setup
-npm start
-```
-
-Unter Linux entsprechend in den Projektordner wechseln. Eine grafische Desktopumgebung und ein funktionierender Audioausgang sind erforderlich.
-
-Nach der Installation unter Windows auch per Doppelklick auf `Start-Soundboard.cmd`, unter Linux mit `sh start.sh` starten.
+Die Dateien `*.sha256` enthalten die SHA-256-Pruefsummen der Downloads. Die Windows-App ist nicht digital signiert. Die Linux-App enthaelt Electron und ein eigenes AppArmor-Profil; die Sandbox wird nicht global deaktiviert.
 
 ## Bedienung
 
-- Kachel anklicken: vorwählen. In der Einstellung **Vorwählen und auslösen** startet oder stoppt derselbe Klick den Einsatz.
-- **Leertaste:** ausgewählte Kachel auslösen. Pro Kachel einstellbar: Stoppen und nächster Start von vorne, oder Pausieren und Fortsetzen.
-- **Pfeiltasten:** Kachel vorwählen. **Esc:** alle laufenden und pausierten Einsätze stoppen und zurücksetzen.
-- Eingabefelder sind von der Leertastensteuerung ausgenommen. Esc stoppt auch während einer Texteingabe.
-- Kacheln am gepunkteten Griff verschieben.
-- Gain pro Kachel: −36 bis +12 dB. Positive Werte können übersteuern. Master regelt die gemeinsame Ausgangslautstärke.
-- **Aufführung:** sperrt Kachelbearbeitung und Anordnung. Wiedergabesteuerung bleibt aktiv.
-- **Speichern:** Projektdatei mit relativen Verweisen auf die vorhandenen Audiodateien.
-- **Mit Audio exportieren:** Projektdatei plus danebenliegender Audioordner. Beide zusammen auf den anderen Rechner kopieren.
-- Die Desktopversion sichert den letzten Entwurf zusätzlich automatisch im Benutzerprofil und stellt ihn beim nächsten Start wieder her. Diese Sicherung ersetzt keine gespeicherte Projektdatei.
+Audiodateien hinzufuegen, eine Kachel vorwaehlen und mit Leertaste starten/stoppen. Der Klickmodus kann nur vorwaehlen oder sofort ausloesen. Pro Kachel sind Stopp/Neustart oder Pause/Fortsetzen einstellbar. Pfeiltasten wechseln die Auswahl, **Esc stoppt sofort alle Einsaetze**.
 
-## Installationspakete
+Im umrandeten Griff links oben ziehen: Die Kachel bleibt am Anfasspunkt unter dem Mauszeiger. Eine farbige Luecke zeigt den Einrastplatz. Am Rand wird gescrollt. Esc oder Loslassen ausserhalb bricht ab. Der Vorstellungsmodus sperrt die Bearbeitung und zeigt groessere Kacheln; beim Verlassen und Schliessen wird nachgefragt.
 
-Nach Installation der Entwicklungsabhängigkeiten:
+Gain, Notizen, Farbe, Ein- und Ausblendzeit werden pro Kachel gespeichert. Die Restzeit zeigt die verbleibende Dauer des aktuellen Durchlaufs. Alles ausblenden beendet laufende Einsaetze mit ihren jeweiligen Ausblendzeiten.
+
+### Endlosschleifen
+
+Unter **Wiedergabe** waehlen:
+
+- Einmal abspielen: normaler Einsatz ohne Wiederholung.
+- Endlosschleife ohne Uebergangsblende: direkte Wiederholung der Datei. Enthaltene Stille bleibt erhalten; eine musikalisch nahtlose Datei muss passend vorbereitet sein.
+- Endlosschleife mit Aus-/Einblenden: jeder Durchlauf blendet am Ende aus und startet wieder mit Einblendung. Die Zeiten unten gelten fuer jeden Wechsel. Pro Blende wird hoechstens eine halbe Dateidauer verwendet, damit kurze Dateien bei langen Einstellungen abspielbar bleiben.
+
+Die Schleife laeuft bis Stopp oder Pause. Start/Stopp verwendet weiterhin die eingestellten Blenden; **0 Sekunden** bedeutet sofort. Esc und Alles stoppen brechen auch eine laufende Schleifenblende sofort ab und verhindern einen spaeteren Neustart. Der Vorstellungsmodus laesst die gespeicherten Schleifen unveraendert.
+
+### Projekte und Audio
+
+Die Desktop-App sichert den Entwurf automatisch. Dateien am bisherigen Ort lassen. Mit Audio exportieren schreibt ein Projekt samt eigenem Audio-Unterordner; beides gemeinsam auf den anderen Rechner kopieren. Fehlende Dateien verhindern einen vermeintlich vollstaendigen Export. Im Browser entsteht stattdessen eine ZIP-Datei (maximal 2 GB), die nach Entpacken ueber Projektordner oeffnen geladen werden kann.
+
+Vorstellungscheck prueft die Lesbarkeit aller Dateien und bietet Ausgangsauswahl und einen leisen Testton. Die Ausgangsauswahl gilt fuer die aktuelle Sitzung, soweit die Laufzeit sie unterstuetzt; alternativ den Systemstandard einstellen. Den Testton an der tatsaechlichen Anlage hoeren.
+
+Freigegebene Dateiendungen: MP3, WAV, OGG, FLAC, M4A. Der enthaltene Codec muss von der Laufzeit unterstuetzt werden. MP3 und WAV sind funktional getestet.
+
+## Projektstruktur
+
+- Oberflaeche: `index.html`, `style.css`, `app.js`.
+- Desktop: `main.cjs`, `preload.cjs`.
+- `packaging`: Linux-Launcher, AppArmor-Profil und Installationsskripte.
+- `tools`: Paketbau, Windows-Starter und Release-Werkzeuge.
+- `tests`: reproduzierbare Funktions- und Maustests sowie aktueller Pruefstand.
+- `files`: lokale eigene Audiodateien/Projekte; bleiben aus Git und den App-Paketen heraus.
+- `releases`: lokal gebaute EXE, DEB und Pruefsummen; auf GitHub als Release-Assets statt im Quellcode.
+
+## Entwickeln und Bauen
+
+Node.js mit npm und fuer den Ubuntu-Paketbau Python ab 3.11 benoetigt:
 
 ```sh
+npm ci
+npm run setup
+npm start
+npm run check
+npm run test:loop
+npm run test:desktop
+npm run test:drag
+npm run test:files
 npm run dist:win
-npm run dist:linux
-```
-
-Pakete jeweils auf dem Zielbetriebssystem erstellen. Ausgabe unter `release/`. Diese erste Version ist nicht signiert.
-
-Das Ubuntu-`.deb` kann zusätzlich unter Windows gebaut werden, ohne eine Linux-Umgebung zu installieren. Dazu wird neben Node.js auch Python ab 3.10 benötigt:
-
-```sh
 npm run dist:ubuntu
 ```
 
-Der Ablauf lädt mit electron-builder die Linux-Laufzeit und verpackt sie mit `tools/build_ubuntu.py` im Debian-Format. Es werden Linux-Dateirechte explizit gesetzt und das fertige Paket direkt überprüft. Eine separate SHA-256-Prüfsumme liegt neben der `.deb`-Datei. Der Python-Paketierer verwendet ausschließlich die Standardbibliothek.
+`test:files` benoetigt die drei lokal bereitgestellten MP3-Dateien unter files. Die anderen Tests erzeugen ihre Testtoene selbst. Tests verwenden eigene, ignorierte Benutzerdatenordner. Unter Umgebungen mit ELECTRON_RUN_AS_NODE diese Variable vor Electron-Tests entfernen.
 
-## Stand und Grenzen
+Der Windows-Starter und die Windows-App verwenden Softwaregrafik, um den auf diesem Rechner beobachteten Grafikstartfehler zu umgehen. Unter der langsamen Ubuntu-TCG-Testmaschine wurde zusaetzlich `--disable-gpu` verwendet.
 
-Dies ist ein erster Funktionsentwurf, noch keine für Aufführungen freigegebene Version. MP3 ist das primäre Format; weitere angebotene Audioformate hängen von der Laufzeit ab. Dateien werden beim ersten Start in den Speicher geladen; es gibt noch kein vollständiges Vorladen aller Einsätze, keine Ausgangswahl, keine Fades und keine automatische Lautheitsanpassung. Die Wiedergabe läuft über den Standardausgang des Betriebssystems.
-
-Vor einem Bühneneinsatz müssen Startverzögerung, Audioausgang, parallele Wiedergabe und Projektexport auf beiden Zielrechnern getestet werden. Betriebssystem-Ruhezustand und Audio-Gerätewechsel sind noch nicht speziell behandelt.
-
-## Quellcode prüfen
-
-```sh
-npm run check
-npm run test:desktop
-```
-
-Die Oberfläche ist bewusst mit HTML, CSS und JavaScript ohne zusätzliches UI-Framework umgesetzt. Electron stellt Fenster und Dateidialoge bereit. Die Wiedergabe verwendet Audio-Elemente mit Web-Audio-Gain pro Kachel und einem Master-Gain. Der Renderer hat keinen direkten Node.js-Zugriff.
-
-Der Desktoptest öffnet kurz ein echtes Fenster, verwendet einen leisen synthetischen WAV-Testton und eine getrennte Datenablage unter `.smoke-data/`. Er prüft Wiedergabe, Pausenposition, Zurücksetzen, Gain, Klickmodi, Überlagerung, Eingabeschutz, Aufführungsmodus sowie Export und Wiederöffnung einschließlich Audiodatei. Er erzeugt `preview.png`. Das ersetzt keinen Hörtest mit den tatsächlichen MP3-Dateien und dem Bühnensystem.
+Pruefstand und Grenzen: [tests/RESULTS.md](tests/RESULTS.md). Ein Hoer- und Langzeittest an der echten Saalanlage bleibt vor Theaterbetrieb erforderlich.

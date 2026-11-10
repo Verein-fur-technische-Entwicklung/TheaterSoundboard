@@ -1,6 +1,6 @@
 {
   "name": "theater-soundboard",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Lokales Soundboard für Theateraufführungen",
   "main": "main.cjs",
@@ -8,10 +8,13 @@
     "setup": "node node_modules/electron/install.js",
     "start": "electron .",
     "check": "node --check main.cjs && node --check preload.cjs && node --check app.js",
-    "test:desktop": "electron smoke.cjs",
+    "test:desktop": "electron tests/smoke.cjs",
     "dist:win": "electron-builder --win portable",
     "dist:linux": "electron-builder --linux AppImage",
-    "dist:ubuntu": "electron-builder --linux --x64 --dir --publish never && python tools/build_ubuntu.py"
+    "dist:ubuntu": "electron-builder --linux --x64 --dir --publish never && python tools/build_ubuntu.py",
+    "test:drag": "electron tests/drag-smoke.cjs",
+    "test:files": "electron tests/files-smoke.cjs",
+    "test:loop": "electron tests/loop-smoke.cjs"
   },
   "devDependencies": {
     "electron": "^42.0.0",
@@ -20,7 +23,15 @@
   "build": {
     "appId": "at.theater.soundboard",
     "productName": "Theater Soundboard",
-    "files": ["main.cjs", "preload.cjs", "index.html", "app.js", "style.css"],
-    "directories": { "output": "release" }
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "index.html",
+      "app.js",
+      "style.css"
+    ],
+    "directories": {
+      "output": "releases"
+    }
   }
 }

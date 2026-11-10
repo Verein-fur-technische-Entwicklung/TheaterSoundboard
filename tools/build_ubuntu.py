@@ -112,14 +112,14 @@ def verify(package: Path):
 
 def build():
     metadata = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
-    source = ROOT / "release" / "linux-unpacked"
+    source = ROOT / "releases" / "linux-unpacked"
     if not (source / "theater-soundboard").is_file():
         raise SystemExit("First run: npx electron-builder --linux --x64 --dir --publish never")
     version = metadata["version"]
-    output = ROOT / "release" / f"Theater-Soundboard_{version}_ubuntu-amd64.deb"
+    output = ROOT / "releases" / f"Theater-Soundboard_{version}_ubuntu-amd64.deb"
     checksums = []
     installed_size = 0
-    with tempfile.TemporaryDirectory(prefix="ubuntu-build-", dir=ROOT / "release") as temporary:
+    with tempfile.TemporaryDirectory(prefix="ubuntu-build-", dir=ROOT / "releases") as temporary:
         temp = Path(temporary)
         data_file = temp / "data.tar.gz"
         with data_file.open("wb") as raw, gzip.GzipFile(fileobj=raw, mode="wb", mtime=0, compresslevel=6) as compressed:

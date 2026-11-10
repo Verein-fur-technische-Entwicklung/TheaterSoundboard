@@ -1,0 +1,65 @@
+const { app, BrowserWindow, dialog } = require('electron');
+const fs = require('node:fs/promises');
+const path = require('node:path');
+const projectRoot = path.resolve(__dirname, '..');
+const assert = require('node:assert/strict');
+const testDirectory = path.join(projectRoot, '.files-test-data');
+app.setPath('userData', testDirectory);
+require('../main.cjs');
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+const deadline = setTimeout(() => {console.error('FAIL timeout');app.exit(1);},240000);
+app.whenReady().then(async () => {
+ try {
+  const win = BrowserWindow.getAllWindows()[0];
+  if(win.webContents.isLoading()) await new Promise(r=>win.webContents.once('did-finish-load',r));
+  const js = s=>win.webContents.executeJavaScript(s,true);
+  await delay(800);
+  const directory=path.join(projectRoot,'files');
+  const files=(await fs.readdir(directory)).filter(f=>f.endsWith('.mp3')).map(f=>path.join(directory,f));
+  assert.equal(files.length,3);
+  await fs.mkdir(testDirectory,{recursive:true});
+  await js(`loadProject({version:1,title:'MP3-Praxistest',master:35,cues:[]});window.confirm=()=>true;true;`);
+  dialog.showOpenDialog=async()=>({canceled:false,filePaths:files});
+  await js('pickFiles(false)');
+  assert.equal(await js('project.cues.length'),3);
+  assert.equal(await js('runCheck()'),true);
+  const lengths=await js('project.cues.map(c=>runtime(c.id).audio.duration)');
+  assert.ok(lengths.every(n=>n>20));
+  for(let i=0;i<3;i++) {
+   await js(`choose(project.cues[${i}].id);trigger(currentCue())`);
+   for(let j=0;j<80 && await js('runtime(selected).audio.currentTime')<.12;j++)await delay(100);
+   assert.ok(await js('runtime(selected).audio.currentTime')>.1);
+   await js(`updateCue('behavior','pause');trigger(currentCue())`);
+   assert.equal(await js('runtime(selected).state'),'paused');
+   await js('trigger(currentCue())');
+   assert.equal(await js('runtime(selected).state'),'playing');
+   await js('stopAll()');
+  }
+  await js(`choose(project.cues[0].id);updateCue('gain',-7);updateCue('fadeIn',.5);updateCue('fadeOut',.5);updateCue('notes','Persistenztest mit Original-MP3');trigger(currentCue())`);
+  for(let j=0;j<150 && await js('runtime(selected).fadeNode.gain.value')<.95;j++)await delay(100);
+  assert.ok(await js('runtime(selected).fadeNode.gain.value')>.95);
+  await js(`$('fadeAll').click()`);await delay(800);assert.equal(await js('runtime(selected).state'),'idle');
+  const output=path.join(testDirectory,'MP3-Praxistest.theater.json');
+  dialog.showSaveDialog=async()=>({canceled:false,filePath:output});
+  await js('saveProject(true)');
+  const saved=JSON.parse(await fs.readFile(output,'utf8'));
+  for(let i=0;i<files.length;i++)assert.deepEqual(await fs.readFile(path.join(testDirectory,saved.cues[i].path)),await fs.readFile(files[i]));
+  dialog.showOpenDialog=async()=>({canceled:false,filePaths:[output]});
+  await js(`(async()=>{loadProject(await window.theater.openProject());await window.theater.saveDraft(project);})()`);
+  const reloaded = new Promise(r=>win.webContents.once('did-finish-load',r));win.webContents.reload();await reloaded;
+  for(let i=0;i<50 && await js('project.cues.length')!==3;i++)await delay(100);
+  assert.equal(await js('project.title'),'MP3-Praxistest');
+  assert.equal(await js('project.cues[0].gain'),-7);
+  assert.equal(await js('project.cues[0].fadeOut'),.5);
+  assert.equal(await js('project.cues[0].notes'),'Persistenztest mit Original-MP3');
+  assert.equal(await js('runCheck()'),true);
+  await js('choose(project.cues[0].id);trigger(currentCue())');
+  assert.equal(await js('runtime(selected).state'),'playing');await js('stopAll()');
+  await js(`$('modeButton').click()`);assert.equal(await js(`$('cueTitle').disabled`),true);
+  await js('showMode=false;render();');
+  await fs.writeFile(path.join(testDirectory,'files-test.png'),(await win.webContents.capturePage()).toPNG());
+  const result={status:'passed',platform:process.platform,version:app.getVersion(),files:files.map(f=>path.basename(f)),durations:lengths,checks:['3 real MP3 play/pause/resume','gain','fade-in/out','portable export byte comparison','project reopen','renderer restart/draft restore','restored playback without reassigning','show-mode']};
+  await fs.writeFile(path.join(testDirectory,'result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));
+  clearTimeout(deadline);app.exit(0);
+ }catch(e){console.error(e);await fs.mkdir(testDirectory,{recursive:true});await fs.writeFile(path.join(testDirectory,'result.json'),JSON.stringify({status:'failed',error:String(e.stack)}));clearTimeout(deadline);app.exit(1);}
+});

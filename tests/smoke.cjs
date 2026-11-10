@@ -2,10 +2,11 @@
 const { app, BrowserWindow, dialog } = require('electron');
 const fs = require('node:fs/promises');
 const path = require('node:path');
+const projectRoot = path.resolve(__dirname, '..');
 const assert = require('node:assert/strict');
-const testDirectory = path.join(__dirname, '.smoke-data');
+const testDirectory = path.join(projectRoot, '.smoke-data');
 app.setPath('userData', testDirectory);
-require('./main.cjs');
+require('../main.cjs');
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const deadline = setTimeout(() => { console.error('FAIL: Test-Zeitlimit'); app.exit(1); }, 45000);
 app.whenReady().then(async () => {
@@ -16,6 +17,7 @@ app.whenReady().then(async () => {
     if (win.webContents.isLoading()) await new Promise(resolve => win.webContents.once('did-finish-load', resolve));
     await delay(700);
     const js = script => win.webContents.executeJavaScript(script, true);
+    await js(`window.confirm = () => true; demo(); true;`);
     assert.equal(await js('document.querySelectorAll(".cue").length'), 6);
     assert.equal(await js('Boolean(window.theater)'), true);
     await js(`$('addCue').click(); $('cueTitle').value='Integrationstest'; $('cueTitle').dispatchEvent(new Event('input'));`);
@@ -55,12 +57,48 @@ app.whenReady().then(async () => {
     assert.equal(await js('runtime(selected).state'), 'idle');
     await js(`$('cueNotes').blur(); $('modeButton').click();`);
     assert.equal(await js('$(' + JSON.stringify('cueTitle') + ').disabled'), true);
+    assert.equal(await js(`$('clickMode').disabled && $('allowOverlap').disabled`), true);
     await js(`$('modeButton').click();`);
+    // Fehlende Dateien sichtbar melden, vollstaendigen Export nicht vortaeuschen.
+    assert.equal(await js('runCheck()'), false);
+    assert.ok(await js(`document.querySelectorAll('.check-error').length`) > 0);
+    await js(`project.cues = project.cues.filter(c => c.path); render();`);
+    assert.equal(await js('runCheck()'), true);
+    await js(`updateCue('fadeIn', .4); updateCue('fadeOut', .35); trigger(currentCue())`);
+    await delay(70);
+    assert.ok(await js('runtime(selected).fadeNode.gain.value') < 1);
+    await delay(500);
+    assert.ok(await js('runtime(selected).fadeNode.gain.value') > .95);
+    await js('trigger(currentCue())');
+    assert.equal(await js('runtime(selected).state'), 'fading');
+    await delay(500);
+    assert.equal(await js('runtime(selected).state'), 'idle');
+    await js(`updateCue('behavior','pause'); trigger(currentCue())`);
+    await delay(200);
+    await js('trigger(currentCue())'); await delay(500);
+    assert.equal(await js('runtime(selected).state'), 'paused');
+    assert.ok(await js('runtime(selected).audio.currentTime') > 0);
+    await js('trigger(currentCue());');
+    await js(`$('fadeAll').click()`); await delay(500);
+    assert.equal(await js('runtime(selected).state'), 'idle');
+    await js('trigger(currentCue())');
+    await delay(100);
+    await js('updateProgress()');
+    assert.equal(await js(`document.querySelector('.cue.selected').classList.contains('ending')`), true);
+    await js('trigger(currentCue())');
+    assert.equal(await js('runtime(selected).state'), 'fading');
+    await js('stopAll()');
+    await delay(500);
+    assert.equal(await js('runtime(selected).state'), 'idle');
+    await js(`updateCue('fadeIn',0); updateCue('fadeOut',0); updateCue('behavior','stop');`);
+    const zipBytes = await js(`(async()=>Array.from(new Uint8Array(await zipBundle([{name:'test.txt',bytes:new TextEncoder().encode('portable-test')}]).arrayBuffer())))()`);
+    await fs.writeFile(path.join(testDirectory, 'bundle-test.zip'), Buffer.from(zipBytes));
     const output = path.join(testDirectory, 'export.theater.json');
     dialog.showSaveDialog = async () => ({ canceled: false, filePath: output });
     await js('saveProject(true)');
     const exported = JSON.parse(await fs.readFile(output, 'utf8'));
     const savedCue = exported.cues.find(cue => cue.title === 'Integrationstest');
+    assert.equal(savedCue.fadeIn, 0); assert.equal(savedCue.fadeOut, 0);
     assert.ok(savedCue.path && !path.isAbsolute(savedCue.path));
     assert.ok(!savedCue.path.includes('\\'), 'Portable Projekte speichern betriebssystemunabhaengige Pfade');
     await fs.access(path.join(testDirectory, savedCue.path));
@@ -86,13 +124,37 @@ app.whenReady().then(async () => {
     assert.equal(await js('runtime(selected).state'), 'playing');
     await js(`document.querySelector('.cue:last-child').click();`);
     assert.equal(await js('runtime(selected).state'), 'idle');
+    // Browser-Bundle mit echter Audio-Datei exportieren und Ordner wieder einlesen.
+    const bundle = await js(`(async()=>{
+      stopAll(); const cue=currentCue();
+      browserFiles.set(cue.id,new File([await window.theater.readAudio(cue.path)],'test.wav'));
+      project.cues=[cue];
+      const oldCreate=URL.createObjectURL, oldClick=HTMLAnchorElement.prototype.click;
+      let exported;
+      URL.createObjectURL=blob=>{exported=blob;return 'blob:test';}; HTMLAnchorElement.prototype.click=function(){};
+      try {await exportBrowserBundle();return Array.from(new Uint8Array(await exported.arrayBuffer()));}
+      finally {URL.createObjectURL=oldCreate;HTMLAnchorElement.prototype.click=oldClick;}
+    })()`);
+    await fs.writeFile(path.join(testDirectory,'portable-browser.zip'),Buffer.from(bundle));
+    await js(`(async()=>{
+      const cue=currentCue(), bytes=await window.theater.readAudio(cue.path);
+      const raw=structuredClone(project);raw.cues[0].path='audio/test.wav';
+      const json=new File([JSON.stringify(raw)],'Auffuehrung.theater.json'), audio=new File([bytes],'test.wav');
+      Object.defineProperty(json,'webkitRelativePath',{value:'Show/Auffuehrung.theater.json'});
+      Object.defineProperty(audio,'webkitRelativePath',{value:'Show/audio/test.wav'});
+      Object.defineProperty($('browserFolder'),'files',{configurable:true,value:[json,audio]});
+      $('browserFolder').dispatchEvent(new Event('change'));
+    })()`);
+    await delay(200);
+    assert.equal(await js('browserFiles.size'),1);
+    assert.equal(await js('runCheck()'),true);
     await js(`demo();`);
     await js(`clearTimeout(toastTimer); $('toast').style.display='none';`);
     await delay(400);
     const image = await win.webContents.capturePage();
-    await fs.writeFile(path.join(__dirname, 'preview.png'), image.toPNG());
+    await fs.writeFile(path.join(projectRoot, 'preview.png'), image.toPNG());
     assert.deepEqual(errors, []);
-    console.log('PASS: Kacheln, Bearbeitung, Audiodatei, Wiedergabe, Pause/Fortsetzen, Stopp/Neustart, Gain, Escape, Eingabeschutz, Aufführungsmodus, Audioexport, Wiederöffnung, Überlagerung und Klickmodi.');
+    console.log('PASS: Blenden, Pause nach Blende, Alles ausblenden, sofortiger Stopp, Dateicheck mit Fehlerfall, ZIP-Erzeugung, Fade-Speicherung;  Kacheln, Bearbeitung, Audiodatei, Wiedergabe, Pause/Fortsetzen, Stopp/Neustart, Gain, Escape, Eingabeschutz, Aufführungsmodus, Audioexport, Wiederöffnung, Überlagerung und Klickmodi.');
     clearTimeout(deadline); app.exit(0);
   } catch (error) { console.error(error); clearTimeout(deadline); app.exit(1); }
 });
