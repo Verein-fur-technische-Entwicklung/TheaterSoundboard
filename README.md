@@ -70,3 +70,7 @@ npm run dist:ubuntu
 Der Windows-Starter und die Windows-App verwenden Softwaregrafik, um den auf diesem Rechner beobachteten Grafikstartfehler zu umgehen. Unter der langsamen Ubuntu-TCG-Testmaschine wurde zusaetzlich `--disable-gpu` verwendet.
 
 Pruefstand und Grenzen: [tests/RESULTS.md](tests/RESULTS.md). Ein Hoer- und Langzeittest an der echten Saalanlage bleibt vor Theaterbetrieb erforderlich.
+
+## Leeres Fenster auf einem anderen Windows-Rechner
+
+Zuerst den Onedir-Ordner vollstaendig auf die lokale Festplatte entpacken. Bleibt das Fenster leer, Start-Diagnose.cmd aus dem Windows-Diagnose-ZIP des Releases neben Theater Soundboard.exe kopieren, alle Soundboard-Fenster schliessen und den Diagnose-Starter ausfuehren. Nach etwa 20 Sekunden das leere Fenster schliessen. Der Starter oeffnet den Ordner mit Dateipruefung.txt, chromium-start.log und console.log (soweit vorhanden) unter %LOCALAPPDATA%/TheaterSoundboard-Diagnose. Keine Firmenrichtlinie oder Sandbox-Einstellung wird geaendert. Ohne dieses Protokoll kann die Ursache eines leeren Fensters nicht sicher festgestellt werden.

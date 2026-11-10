@@ -23,6 +23,7 @@ def main():
     parser.add_argument('--publish', action='store_true')
     parser.add_argument('--check', action='store_true')
     parser.add_argument('--add-onedir', action='store_true', help='Add an Onedir ZIP to the existing release')
+    parser.add_argument('--add-diagnostics', action='store_true', help='Add Windows startup diagnostics')
     args = parser.parse_args()
     remote = git('remote', 'get-url', 'origin')
     match = re.fullmatch(r'https://github\.com/([^/]+/[^/]+?)(?:\.git)?', remote)
@@ -47,12 +48,15 @@ def main():
             return json.load(response)
     info = api('GET', base)
     print('Repository:', repo, '| push permission:', info.get('permissions', {}).get('push'))
-    if not (args.publish or args.add_onedir):
+    supplemental = args.add_onedir or args.add_diagnostics
+    if not (args.publish or supplemental):
         return
     version = json.loads((ROOT / 'package.json').read_text('utf-8'))['version']
     names = [f'Theater Soundboard {version}.exe', f'Theater-Soundboard_{version}_ubuntu-amd64.deb']
     if args.add_onedir:
         names = [f'Theater-Soundboard_{version}_windows-x64-onedir.zip']
+    if args.add_diagnostics:
+        names = [f'Theater-Soundboard_{version}_Windows-Diagnose.zip']
     assets = []
     for name in names:
         file = ROOT / 'releases' / name
@@ -62,17 +66,17 @@ def main():
             raise SystemExit('Checksum mismatch: ' + name)
         assets.extend([file, checksum])
     commit = git('rev-parse', 'HEAD')
-    if not args.add_onedir and git('rev-parse', 'origin/main') != commit:
+    if not supplemental and git('rev-parse', 'origin/main') != commit:
         raise SystemExit('Push the exact source commit to origin/main first.')
     tag = 'v' + version
     try:
         release = api('GET', base + '/releases/tags/' + tag)
-        if not args.add_onedir and (release.get('target_commitish') != commit or not release.get('draft')):
+        if not supplemental and (release.get('target_commitish') != commit or not release.get('draft')):
             raise SystemExit('Release already exists; refusing to overwrite a published or different release.')
     except urllib.error.HTTPError as error:
         if error.code != 404:
             raise
-        if args.add_onedir:
+        if supplemental:
             raise SystemExit('Publish the base release first.')
         release = api('POST', base + '/releases', {
             'tag_name': tag, 'target_commitish': commit, 'name': 'Theater Soundboard ' + version,
