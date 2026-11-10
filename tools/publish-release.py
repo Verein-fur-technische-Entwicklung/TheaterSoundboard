@@ -74,10 +74,15 @@ def main():
             'draft': True, 'body': 'Endlosschleife pro Kachel: direkt oder mit Aus-/Einblenden. Schleifen, Blenden und Bedienung bleiben im Projekt gespeichert. Verbesserter Windows-Start mit Softwaregrafik und Wiederverwendung eines offenen Fensters.\n\nWindows: EXE direkt starten. Ubuntu Desktop 24.04+ amd64: DEB installieren. SHA-256-Pruefsummen sind beigefuegt.\n\nSchleifen- und Desktoptests unter Windows bestanden; Debian-Paketstruktur und Linux-Laufzeit geprueft. Hoertest mit der eigenen Saalanlage bleibt erforderlich.'})
     uploaded = {a['name'] for a in release.get('assets', [])}
     for file in assets:
-        if file.name in uploaded:
+        upload_name = file.name.replace(' ', '.')
+        if upload_name in uploaded:
             continue
-        url = release['upload_url'].split('{')[0] + '?name=' + urllib.parse.quote(file.name)
-        result = api('POST', url, file.read_bytes(), binary=True)
+        payload = file.read_bytes()
+        if file.name.endswith('.sha256'):
+            digest = file.read_text('ascii').split()[0]
+            payload = (digest + '  ' + upload_name.removesuffix('.sha256') + '\n').encode('ascii')
+        url = release['upload_url'].split('{')[0] + '?name=' + urllib.parse.quote(upload_name)
+        result = api('POST', url, payload, binary=True)
         print('Uploaded:', result['name'], result['size'])
     result = api('PATCH', base + '/releases/' + str(release['id']), {'draft': False})
     print('Published:', result['html_url'])
