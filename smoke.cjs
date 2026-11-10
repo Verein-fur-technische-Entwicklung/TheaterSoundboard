@@ -33,7 +33,7 @@ app.whenReady().then(async () => {
     dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [audioFile] });
     await js('pickFiles(true)');
     await js(`updateCue('behavior','pause'); trigger(currentCue())`);
-    await delay(200);
+    for (let attempt = 0; attempt < 50 && await js('runtime(selected).audio.currentTime') === 0; attempt++) await delay(100);
     assert.equal(await js('runtime(selected).state'), 'playing');
     await js('trigger(currentCue())');
     assert.equal(await js('runtime(selected).state'), 'paused');
@@ -62,6 +62,7 @@ app.whenReady().then(async () => {
     const exported = JSON.parse(await fs.readFile(output, 'utf8'));
     const savedCue = exported.cues.find(cue => cue.title === 'Integrationstest');
     assert.ok(savedCue.path && !path.isAbsolute(savedCue.path));
+    assert.ok(!savedCue.path.includes('\\'), 'Portable Projekte speichern betriebssystemunabhaengige Pfade');
     await fs.access(path.join(testDirectory, savedCue.path));
     dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [output] });
     await js(`(async()=>{ const data=await window.theater.openProject(); loadProject(data); choose(project.cues.find(c=>c.title==='Integrationstest').id); await trigger(currentCue()); })()`);

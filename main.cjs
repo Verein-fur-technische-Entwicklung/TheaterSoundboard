@@ -43,8 +43,8 @@ ipcMain.handle('project:save', async (_, project, portable) => {
       const name = String(index + 1).padStart(3, '0') + '-' + path.basename(source);
       const target = path.join(directory, assetFolder, name);
       if (source !== target) await fs.copyFile(source, target);
-      cue.path = path.join(assetFolder, name);
-    } else cue.path = path.relative(directory, source);
+      cue.path = path.posix.join(assetFolder, name);
+    } else cue.path = path.relative(directory, source).split(path.sep).join('/');
   }
   const temporary = result.filePath + '.tmp';
   await fs.writeFile(temporary, JSON.stringify(copy, null, 2), 'utf8');
@@ -59,7 +59,7 @@ ipcMain.handle('project:open', async () => {
   if (project.version !== 1 || !Array.isArray(project.cues) || project.cues.length > 1000) throw new Error('Ungültiges Projektformat.');
   for (const cue of project.cues) {
     if (typeof cue.path === 'string' && cue.path) {
-      cue.path = path.resolve(path.dirname(filename), cue.path);
+      cue.path = path.resolve(path.dirname(filename), cue.path.replace(/\\/g, '/'));
       if (!isAudio(cue.path)) throw new Error('Ungültige Audiodatei im Projekt.');
       allowedAudio.add(cue.path);
     }

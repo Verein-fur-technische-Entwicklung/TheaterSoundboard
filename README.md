@@ -18,7 +18,7 @@ sudo apt install ./Theater-Soundboard_0.1.0_ubuntu-amd64.deb
 
 Das Paket enthält Electron, das Programmsymbol, einen App-Menü-Eintrag und ein eigenes AppArmor-Profil für Chromiums Sandbox. Es verändert keine globalen Sandbox-Einstellungen und startet nicht mit `--no-sandbox`. Es ist kein Paket für ARM-Rechner oder Ubuntu 22.04.
 
-Der Debian-Archivaufbau, die enthaltene Linux-amd64-Laufzeit, Dateiprüfsummen, Besitzer, Berechtigungen und Startdateien werden beim Bau überprüft. **Installation und Wiedergabe auf Ubuntu sind bisher nicht praktisch getestet.**
+Der Debian-Archivaufbau, die enthaltene Linux-amd64-Laufzeit, Dateiprüfsummen, Besitzer, Berechtigungen und Startdateien werden beim Bau überprüft. Am 10.11.2026 wurden Installation, Start mit aktivem AppArmor-Profil sowie die Integrationstests mit einer synthetischen MP3-Datei unter Ubuntu 24.04.5 Desktop in einer VM geprüft. Die Audioausgabe wurde als Stereo-PCM mit 48 kHz aufgezeichnet und auf ein vorhandenes Signal geprüft. Die Protokolle liegen im benachbarten Projekt `LinuxTestLab/logs`. Ein Hör- und Belastungstest mit den eigenen Aufführungsdateien und dem tatsächlichen Audiointerface steht weiterhin aus.
 
 Deinstallation über die Paketverwaltung oder `sudo apt remove theater-soundboard`. Eigene Projektdateien und Benutzereinstellungen bleiben erhalten.
 
